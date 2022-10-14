@@ -133,7 +133,7 @@
         <section>
             <div class="container">
                 <p>Section One</p>
-                <table>
+                <table class="droptarget"  ondragenter="dragEntered()" ondragover="dragOver(event)" ondragleave="dragLeave()" ondrop="drop(event)">
                     <thead>
                     <tr>
                         <td></td>
@@ -165,8 +165,8 @@
                 </table>
             </div>
             <div class="container">
-                <p  draggable="true" >Section Two</p>
-                <table>
+                <p>Section Two</p>
+                <table class="droptarget"  ondragenter="dragEntered()" ondragover="dragOver(event)" ondragleave="dragLeave()" ondrop="drop(event)">
                     <thead>
                     <tr>
                         <td></td>
@@ -226,6 +226,12 @@
                             for(let section in firstSections)
                             {
                                 let sectionTr = document.createElement('tr')
+
+                                sectionTr.classList.add('draggable-item')
+                                sectionTr.setAttribute('draggable', 'true')
+                                sectionTr.setAttribute('ondrag', 'dragging(event)')
+                                sectionTr.setAttribute('ondragstart', 'dragStarted(event)')
+                                sectionTr.setAttribute('ondragend', 'dragFinished(event)')
                                 let idTd = document.createElement('td')
                                 idTd.innerHTML = firstSections[section]['id']
                                 sectionTr.appendChild(idTd)
@@ -281,6 +287,7 @@
                             for(let section in firstSections)
                             {
                                 let sectionTr = document.createElement('tr')
+                                sectionTr.classList.add('draggable-item')
                                 sectionTr.setAttribute('draggable', 'true')
                                 let idTd = document.createElement('td')
                                 idTd.innerHTML = firstSections[section]['id']
@@ -359,8 +366,8 @@
                             let tbody = Number(sectionNumber) == 1 ?
                                 document.querySelector('.container:first-of-type table tbody')
                                 : document.querySelector('.container:last-of-type table tbody')
-
                                 let sectionTr = document.createElement('tr')
+                                sectionTr.classList.add('draggable-item')
                                 sectionTr.setAttribute('draggable', 'true')
                                 let idTd = document.createElement('td')
                                 idTd.innerHTML = data.section.id
@@ -553,8 +560,42 @@
                     element.classList.remove('fa-check')
                     element.style.color  ='#5944bb'
                 }
+            }
 
+            function dragStarted(event) {
+                // add class and cursor
+                console.log('starting drag')
+            }
 
+            function dragging(event) {
+                console.log('dragging')
+            }
+
+            function dragFinished(event) {
+                // remove class and cursor
+                console.log('finishing drag')
+            }
+
+            function dragEntered() {
+                console.log('drag entered me')
+            }
+
+            function dragOver(event)
+            {
+                console.log('drag is over me')
+
+                event.preventDefault();
+            }
+
+            function dragLeave() {
+                console.log('drag left me')
+            }
+
+            function drop(event)
+            {
+                console.log('something dropped on me')
+                event.preventDefault();
+                var data = event.dataTransfer.getData("Text");
             }
         </script>
     </body>

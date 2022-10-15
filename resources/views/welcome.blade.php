@@ -1,139 +1,14 @@
 <html>
     <head>
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-                font-family: sans-serif;
-            }
-
-            body{
-                overflow-x: hidden;
-                /*height: fit-content;*/
-            }
-
-            section {
-                min-height: 100vh;
-                display: flex;
-            }
-
-            section .container {
-                width:50%;
-                height: inherit;
-                /*border: 1px solid darkgrey;*/
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
-                text-align: center;
-                align-items: center;
-            }
-
-            section .container:first-of-type {
-                border-right: 1px solid darkgrey;
-            }
-
-            section .container:last-of-type {
-                border-left: 1px solid darkgrey;
-            }
-            section .container p {
-                height: 15vh;
-                display: flex;
-                font-size: 18px;
-                font-weight: bold;
-                justify-content: center;
-                align-items: center;
-            }
-
-            input {
-
-                border: 1px solid aliceblue;
-                padding: 10px 15px;
-                outline: none;
-                border-radius: 10px;
-            }
-
-            button{
-                background-color: darkcyan;
-                border-radius: 5px;
-                border: 0;
-                color:white;
-                padding: 10px 20px;
-            }
-
-            input:focus {
-                box-shadow: 0 1px 2px rgba(0,0,0,0.07),
-                0 2px 4px rgba(0,0,0,0.07),
-                0 4px 8px rgba(0,0,0,0.07),
-                0 8px 16px rgba(0,0,0,0.07),
-                0 16px 32px rgba(0,0,0,0.07),
-                0 32px 64px rgba(0,0,0,0.07);
-            }
-            table, tbody {
-                text-align: center;
-            }
-
-            td, th {
-                padding: 10px 0;
-            }
-            section .container table {
-                width: 90%;
-                height: fit-content;
-
-            }
-
-            .message {
-                position: absolute;
-                z-index: 1;
-                padding: 15px;
-                width: 250px;
-                text-align: center;
-                background-color: white;
-                border: 3px solid  #20e16e;
-                color: #20e16e;
-                right: -300px;
-                top: 20px;
-                border-radius: 20px;
-                transform: rotate(0);
-                display: none;
-            }
-
-            @keyframes moving {
-                0%{
-                    right: -300px;
-                    transform: rotate(0);
-                }
-
-                25% {
-                    right: 20px;
-                    transform: rotate(0);
-                }
-
-                50% {
-                    right: 20px;
-                    transform: rotate(-10deg);
-                }
-
-                75% {
-                    right: 20px;
-                    transform: rotate(10deg);
-                }
-
-                100% {
-                    right: -300px;
-                    transform: rotate(0deg);
-                }
-            }
-
-        </style>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="stylesheet" href="{{asset('css/main.css')}}">
     </head>
     <body>
         <div class="message"></div>
         <section>
             <div class="container">
                 <p>Section One</p>
-                <table class="droptarget"  ondragenter="dragEntered()" ondragover="dragOver(event)" ondragleave="dragLeave()" ondrop="drop(event)">
+                <table class="drop-target" id="section-one">
                     <thead>
                     <tr>
                         <td></td>
@@ -166,7 +41,7 @@
             </div>
             <div class="container">
                 <p>Section Two</p>
-                <table class="droptarget"  ondragenter="dragEntered()" ondragover="dragOver(event)" ondragleave="dragLeave()" ondrop="drop(event)">
+                <table class="drop-target" id="section-two">
                     <thead>
                     <tr>
                         <td></td>
@@ -199,10 +74,14 @@
             </div>
         </section>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-
         <script>
-
             // use progress bar
+
+            // make design of the container
+
+            // current will not have dashed border
+
+            let dragItem = null;
 
             function loadSections()
             {
@@ -215,7 +94,7 @@
 
                 $.ajax({
                     type:'GET',
-                    url:'{{route('first_sections.index')}}',
+                    url:'{{route("first_sections.index")}}',
                     data:{},
                     success:function(data){
                         //handle errors
@@ -226,12 +105,13 @@
                             for(let section in firstSections)
                             {
                                 let sectionTr = document.createElement('tr')
-
-                                sectionTr.classList.add('draggable-item')
+                                // sectionTr.setAttribute('dragstart', 'dragStart(event)')
+                                // sectionTr.setAttribute('ondragend', 'dragEnd(event)')
                                 sectionTr.setAttribute('draggable', 'true')
-                                sectionTr.setAttribute('ondrag', 'dragging(event)')
-                                sectionTr.setAttribute('ondragstart', 'dragStarted(event)')
-                                sectionTr.setAttribute('ondragend', 'dragFinished(event)')
+                                sectionTr.setAttribute('id', 'tr-1-' + firstSections[section]['id'])
+
+                                // sectionTr.setAttribute('ondrag', 'drag(event)')
+
                                 let idTd = document.createElement('td')
                                 idTd.innerHTML = firstSections[section]['id']
                                 sectionTr.appendChild(idTd)
@@ -276,7 +156,7 @@
                 });
                 $.ajax({
                     type:'GET',
-                    url:'{{route('second_sections.index')}}',
+                    url:'{{route("second_sections.index")}}',
                     data:{},
                     success:function(data){
                         //handle errors
@@ -287,8 +167,14 @@
                             for(let section in firstSections)
                             {
                                 let sectionTr = document.createElement('tr')
-                                sectionTr.classList.add('draggable-item')
+                                // sectionTr.setAttribute('dragstart', 'dragStart(event)')
+                                // sectionTr.setAttribute('ondragend', 'dragEnd(event)')
                                 sectionTr.setAttribute('draggable', 'true')
+                                sectionTr.setAttribute('id', 'tr-2-' + firstSections[section]['id'])
+
+                                // sectionTr.setAttribute('ondrag', 'drag(event)')
+
+
                                 let idTd = document.createElement('td')
                                 idTd.innerHTML = firstSections[section]['id']
                                 sectionTr.appendChild(idTd)
@@ -334,125 +220,66 @@
 
             loadSections()
 
+            let targets = document.querySelectorAll('.drop-target')
+
+            targets.forEach(target => {
+                target.addEventListener('dragover', function (event) {
+                    event.preventDefault()
+                    let currentContainer = event.target.closest('.container')
+                    let currentTable = currentContainer.querySelector('table')
+                    currentTable.style.opacity = '0.5'
+                    currentTable.style.border = '1px dashed black'
+                })
+
+                target.addEventListener('dragenter', function (event) {
+                    event.preventDefault()
+                })
+
+                target.addEventListener('dragleave', function (event) {
+                    let currentContainer = event.target.closest('.container')
+                    let currentTable = currentContainer.querySelector('table')
+                    currentTable.style.opacity = '1'
+                    currentTable.style.border = '0'
+                })
+
+                target.addEventListener('drop', function (event) {
+                    event.preventDefault();
+                    let currentContainer = event.target.closest('.container')
+                    let currentTbody = currentContainer.querySelector('table tbody')
+                    currentTbody.parentElement.style.opacity = '1'
+                    currentTbody.parentElement.style.border = '0'
+                    moveSection(dragItem, getNodeIndex(currentContainer))
+                    let sectionId = dragItem.querySelector('td:first-child').innerText
+                    removeSection(sectionId, dragItem, getNodeIndex(dragItem.closest('.container')))
+                })
+            })
+
+
             function addSection(btn, sectionNumber)
             {
-               let currentTr = btn.closest('tr')
-
+                let currentTr = btn.closest('tr')
                 let name = currentTr.querySelector('input[name="name"]')
                 let birthDate = currentTr.querySelector('input[name="birth_date"]')
                 let createdAt = currentTr.querySelector('input[name="created_at"]')
 
+                let sectionData = {
+                    name: name.value,
+                    birth_date: birthDate.value,
+                    created_at: createdAt.value,
+                }
+                createSection(sectionData, sectionNumber)
+            }
 
-
-                $.ajaxSetup({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    }
-                });
-
-                let token = "{{ csrf_token()}}";
-
-                $.ajax({
-                    type: 'POST',
-                    url: Number(sectionNumber) == 1 ? '{{route('first_sections.store')}}' : '{{route('second_sections.store')}}' ,
-                    data: {
-                        _token: token,
-                        name: name.value,
-                        birth_date: birthDate.value,
-                        created_at: createdAt.value,
-                    },
-                    success: function (data) {
-                        if(data.status) {
-                            let tbody = Number(sectionNumber) == 1 ?
-                                document.querySelector('.container:first-of-type table tbody')
-                                : document.querySelector('.container:last-of-type table tbody')
-                                let sectionTr = document.createElement('tr')
-                                sectionTr.classList.add('draggable-item')
-                                sectionTr.setAttribute('draggable', 'true')
-                                let idTd = document.createElement('td')
-                                idTd.innerHTML = data.section.id
-                                sectionTr.appendChild(idTd)
-                                let nameTd = document.createElement('td')
-                                nameTd.innerHTML =data.section.name
-                                sectionTr.appendChild(nameTd)
-                                let birthDateTd = document.createElement('td')
-                                birthDateTd.innerHTML = data.section.birth_date
-                                sectionTr.appendChild(birthDateTd)
-                                let createdAtTd = document.createElement('td')
-                                createdAtTd.innerHTML = data.section.created_at
-                                sectionTr.appendChild(createdAtTd)
-                                let actionTd = document.createElement('td')
-                                let deleteBtn = document.createElement('button')
-                                deleteBtn.style.fontSize = '18px'
-                                deleteBtn.style.display = 'flex'
-                                deleteBtn.style.gap = '20px'
-                                deleteBtn.style.justifyContent = 'space-between'
-                                deleteBtn.style.cursor = 'pointer'
-                                deleteBtn.style.backgroundColor = 'transparent'
-                                let editIcon  = document.createElement('i')
-                                editIcon.classList.add('fa-solid', 'fa-pen-to-square')
-                                let trashIcon  = document.createElement('i')
-                                trashIcon.classList.add('fa-solid', 'fa-trash')
-                                deleteBtn.appendChild(trashIcon)
-                                deleteBtn.appendChild(editIcon)
-                                actionTd.appendChild(deleteBtn)
-                                sectionTr.appendChild(actionTd)
-                                tbody.appendChild(sectionTr)
-
-                            trashIcon.style.color = '#da2557'
-                            trashIcon.setAttribute('onclick', 'deleteSection(this, '+sectionNumber+')')
-                            editIcon.style.color = '#5944bb'
-                            editIcon.setAttribute('onclick', 'editSection(this,  '+sectionNumber+')')
-
-                            name.value =''
-                            birthDate.value =''
-                            createdAt.value =''
-                            let message = document.querySelector('.message')
-                            message.innerHTML = data.message
-                            message.style.setProperty('animation', 'moving 3s')
-                            message.style.display = 'block'
-                            setTimeout(function() {
-                                message.style.display = 'none'
-                            }, 3000);
-                        }
-                    }
-                })
+            function clearInputs(sectionNumber) {
+                let inputs = sectionNumber == 1 ? document.querySelectorAll('.container:first-of-type table input') :
+                    document.querySelectorAll('.container:last-of-type table input')
+                inputs.forEach(input => input.value = '')
             }
 
             function deleteSection(btn, sectionNumber) {
                 let sectionTr = btn.closest('tr')
-
                 let id = sectionTr.querySelector(':first-child')
-                $.ajaxSetup({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    }
-                });
-
-                let token = "{{ csrf_token()}}";
-
-                let url = Number(sectionNumber) == 1 ? '{{route('first_sections.destroy', ':id')}}' : '{{route('second_sections.destroy', ':id')}}'
-                url = url.replace(':id', id.innerText)
-
-                $.ajax({
-                    type: 'DELETE',
-                    url: url,
-                    data: {
-                        _token: token
-                    },
-                    success: function (data) {
-                        if(data.status) {
-                            sectionTr.remove()
-                            let message = document.querySelector('.message')
-                            message.innerHTML = data.message
-                            message.style.setProperty('animation', 'moving 3s')
-                            message.style.display = 'block'
-                            setTimeout(function() {
-                                message.style.display = 'none'
-                            }, 3000);
-                        }
-                    }
-                })
+                removeSection(id.innerText, sectionTr , sectionNumber)
             }
 
             function editSection(element, sectionNumber)
@@ -468,22 +295,13 @@
                 let createdAtTd = currentTr.querySelector(':nth-child(4)')
 
 
-
-                // create inputs and set data as values to the inputs
-
-                // set values of inputs
-
-                // change icon of the button
-
                 if(element.classList.contains('fa-pen-to-square'))
                 {
-
 
                     let nameInput = document.createElement('input')
                     nameInput.setAttribute('type', 'text')
                     nameInput.setAttribute('value', nameTd.innerText)
                     nameInput.setAttribute('name', 'name')
-
 
                     let birthDateInput = document.createElement('input')
                     birthDateInput.setAttribute('type', 'date')
@@ -515,13 +333,12 @@
                         }
                     });
 
-
                     let idTd = currentTr.querySelector(':first-child')
                     let nameInput = currentTr.querySelector('input[name="name"]')
                     let birthDateInput = currentTr.querySelector('input[name="birth_date"]')
                     let createdAtInput = currentTr.querySelector('input[name="created_at"]')
 
-                    let url = Number(sectionNumber) == 1 ? '{{route('first_sections.update', ':id')}}' : '{{route('second_sections.update', ':id')}}'
+                    let url = Number(sectionNumber) == 1 ? '{{route("first_sections.update", ":id")}}' : '{{route("second_sections.update", ":id")}}'
                     url = url.replace(':id', idTd.innerText)
 
                     let token = "{{ csrf_token()}}";
@@ -543,60 +360,139 @@
                                 birthDateTd.innerHTML = data.section.birth_date
                                 createdAtTd.innerHTML = data.section.created_at
 
-                                let message = document.querySelector('.message')
-                                message.innerHTML = data.message
-                                message.style.setProperty('animation', 'moving 3s')
-                                message.style.display = 'block'
-                                setTimeout(function() {
-                                    message.style.display = 'none'
-                                }, 3000);
+                                showMessage(data.message)
                             }
                         }
                     })
-                    // remove inputs
 
-                    // set new data as inner html of tds
                     element.classList.add('fa-pen-to-square')
                     element.classList.remove('fa-check')
                     element.style.color  ='#5944bb'
                 }
             }
 
-            function dragStarted(event) {
-                // add class and cursor
-                console.log('starting drag')
+            let tables = document.querySelectorAll('table')
+
+            tables.forEach(table =>  table.ondragstart = (event) => event.target.tagName === 'TR' ? dragItem = event.target : '')
+
+            function moveSection(sectionTr, newSectionNumber) {
+                let name = sectionTr.querySelector('td:nth-child(2)').innerText
+                let birthDate = sectionTr.querySelector('td:nth-child(3)').innerText
+                let createdAt = sectionTr.querySelector('td:nth-child(4)').innerText
+
+                let section = {
+                    name : name,
+                    birth_date : birthDate,
+                    created_at : createdAt
+                }
+                createSection(section, newSectionNumber)
             }
 
-            function dragging(event) {
-                console.log('dragging')
+            function createSection(sectionData, sectionNumber) {
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
+
+                let token = "{{ csrf_token()}}";
+                sectionData['_token'] = token
+                $.ajax({
+                    type: 'POST',
+                    url: Number(sectionNumber) == 1 ? '{{route("first_sections.store")}}' : '{{route("second_sections.store")}}' ,
+                    data: sectionData,
+                    success: function (data) {
+                        if(data.status) {
+                            let tbody = Number(sectionNumber) == 1 ?
+                                document.querySelector('.container:first-of-type table tbody')
+                                : document.querySelector('.container:last-of-type table tbody')
+                            let sectionTr = document.createElement('tr')
+                            sectionTr.setAttribute('draggable', 'true')
+                            sectionTr.setAttribute('id', 'tr-' +sectionNumber+ '-' + data.section.id)
+                            let idTd = document.createElement('td')
+                            idTd.innerHTML = data.section.id
+                            sectionTr.appendChild(idTd)
+                            let nameTd = document.createElement('td')
+                            nameTd.innerHTML =data.section.name
+                            sectionTr.appendChild(nameTd)
+                            let birthDateTd = document.createElement('td')
+                            birthDateTd.innerHTML = data.section.birth_date
+                            sectionTr.appendChild(birthDateTd)
+                            let createdAtTd = document.createElement('td')
+                            createdAtTd.innerHTML = data.section.created_at
+                            sectionTr.appendChild(createdAtTd)
+                            let actionTd = document.createElement('td')
+                            let deleteBtn = document.createElement('button')
+                            deleteBtn.style.fontSize = '18px'
+                            deleteBtn.style.display = 'flex'
+                            deleteBtn.style.gap = '20px'
+                            deleteBtn.style.justifyContent = 'space-between'
+                            deleteBtn.style.cursor = 'pointer'
+                            deleteBtn.style.backgroundColor = 'transparent'
+                            let editIcon  = document.createElement('i')
+                            editIcon.classList.add('fa-solid', 'fa-pen-to-square')
+                            let trashIcon  = document.createElement('i')
+                            trashIcon.classList.add('fa-solid', 'fa-trash')
+                            deleteBtn.appendChild(trashIcon)
+                            deleteBtn.appendChild(editIcon)
+                            actionTd.appendChild(deleteBtn)
+                            sectionTr.appendChild(actionTd)
+                            tbody.appendChild(sectionTr)
+
+                            trashIcon.style.color = '#da2557'
+                            trashIcon.setAttribute('onclick', 'deleteSection(this, '+sectionNumber+')')
+                            editIcon.style.color = '#5944bb'
+                            editIcon.setAttribute('onclick', 'editSection(this,  '+sectionNumber+')')
+                            clearInputs(sectionNumber)
+                            showMessage(data.message)
+                        }
+                    }
+                })
             }
 
-            function dragFinished(event) {
-                // remove class and cursor
-                console.log('finishing drag')
-            }
-
-            function dragEntered() {
-                console.log('drag entered me')
-            }
-
-            function dragOver(event)
+            function removeSection(sectionId, element, sectionNumber)
             {
-                console.log('drag is over me')
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
 
-                event.preventDefault();
+                let token = "{{ csrf_token()}}";
+
+                let url = Number(sectionNumber) == 1 ? '{{route("first_sections.destroy", ":id")}}' : '{{route("second_sections.destroy", ":id")}}'
+                url = url.replace(':id', sectionId)
+
+                $.ajax({
+                    type: 'DELETE',
+                    url: url,
+                    data: {
+                        _token: token
+                    },
+                    success: function (data) {
+                        if(data.status) {
+                            element.remove()
+                            showMessage(data.message)
+                        }
+                    }
+                })
             }
 
-            function dragLeave() {
-                console.log('drag left me')
+            function showMessage(messageText) {
+                let message = document.querySelector('.message')
+                message.innerHTML = messageText
+                message.style.display = 'none'
+                message.style.setProperty('animation', 'moving 3s')
+                message.style.display = 'block'
+                setTimeout(function() {
+                    message.style.display = 'none'
+                }, 3000);
             }
 
-            function drop(event)
-            {
-                console.log('something dropped on me')
-                event.preventDefault();
-                var data = event.dataTransfer.getData("Text");
+            function getNodeIndex(element) {
+                return Array.prototype.indexOf.call(element.parentNode.childNodes, element)
             }
+
         </script>
     </body>
 </html>

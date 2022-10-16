@@ -2,74 +2,78 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SecondSectionCreateRequest;
 use App\Http\Resources\SectionResource;
 use App\Models\SecondSection;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class SecondSectionController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
-        return response()->json([
-            'status' => true,
-            'sections' => SectionResource::collection(SecondSection::all())
-        ]);
+        try {
+            $sections = SectionResource::collection(SecondSection::all());
+            return response()->json([
+                'status' => true,
+                'sections' => $sections
+            ]);
+        } catch (\Throwable $exception) {
+            return response()->json([
+                'status' => false,
+                'message' => $exception->getMessage()
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
     }
 
-
-    public function store(Request $request)
+    public function store(SecondSectionCreateRequest $request): JsonResponse
     {
-        $section = SecondSection::create($request->all());
-        return response()->json([
-            'status' => true,
-            'message' => 'Good adding !',
-            'section' => new SectionResource($section)
-        ]);
+        try {
+            $section = SecondSection::create($request->all());
+            return response()->json([
+                'status' => true,
+                'message' => 'Good adding !',
+                'section' => new SectionResource($section)
+            ]);
+        } catch (\Throwable $exception) {
+            return response()->json([
+                'status' => false,
+                'message' => 'we have an error ! ' . $exception->getMessage()
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    public function update(SecondSectionCreateRequest $request, SecondSection $secondSection): JsonResponse
     {
-        //
+        try {
+            $secondSection->update($request->validated());
+            return response()->json([
+                'status' => true,
+                'section' => new SectionResource($secondSection),
+                'message' => 'Update succeeded!'
+            ]);
+        } catch (\Throwable $exception) {
+            return response()->json([
+                'status' => false,
+                'message' => 'we have an error ! ' . $exception->getMessage()
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
+    public function destroy(SecondSection $secondSection): JsonResponse
     {
-        //
-    }
-
-
-
-    public function update(Request $request, SecondSection $secondSection)
-    {
-        $secondSection->update($request->all());
-
-        return response()->json([
-            'status' => true,
-            'section' => new SectionResource($secondSection),
-            'message' => 'Update succeeded!'
-        ]);
-    }
-
-
-
-    public function destroy(SecondSection $secondSection)
-    {
-        $secondSection->delete();
-        return response()->json([
-            'status' => true,
-            'message' => 'Delete succeeded!'
-        ]);
+        try {
+            $secondSection->delete();
+            return response()->json([
+                'status' => true,
+                'message' => 'Delete succeeded!'
+            ]);
+        } catch (\Throwable $exception) {
+            return response()->json([
+                'status' => false,
+                'message' => 'we have an error ! ' . $exception->getMessage()
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
     }
 }

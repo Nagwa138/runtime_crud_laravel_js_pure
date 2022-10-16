@@ -2,57 +2,80 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FirstSectionCreateRequest;
 use App\Http\Resources\SectionResource;
 use App\Models\FirstSection;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class FirstSectionController extends Controller
 {
 
-    public function index()
+    public function index(): JsonResponse
     {
-        // make try and catch
-        return response()->json([
-            'status' => true,
-            'sections' => SectionResource::collection(FirstSection::all())
-        ]);
+        try {
+            $sections = SectionResource::collection(FirstSection::all());
+            return response()->json([
+                'status' => true,
+                'sections' => $sections
+            ]);
+        } catch (\Throwable $exception) {
+            return response()->json([
+                'status' => false,
+                'message' => $exception->getMessage()
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
     }
 
-    public function store(Request $request)
+    public function store(FirstSectionCreateRequest $request): JsonResponse
     {
-        //return success message and new record
-
-        // make try and catch
-
-        $section = FirstSection::create($request->all());
-        return response()->json([
-            'status' => true,
-            'message' => 'Good adding !',
-            'section' => new SectionResource($section)
-        ]);
+        try {
+            $section = FirstSection::create($request->validated());
+            return response()->json([
+                'status' => true,
+                'message' => 'Good adding !',
+                'section' => new SectionResource($section)
+            ]);
+        } catch (\Throwable $exception) {
+            return response()->json([
+                'status' => false,
+                'message' => 'we have an error ! ' . $exception->getMessage()
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
     }
 
 
     public function update(Request $request, FirstSection $firstSection)
     {
-        // if not updated return error message
-        $firstSection->update($request->all());
-        return response()->json([
-            'status' => true,
-            'section' => new SectionResource($firstSection),
-            'message' => 'Update succeeded!'
-        ]);
+        try {
+            $firstSection->update($request->all());
+            return response()->json([
+                'status' => true,
+                'section' => new SectionResource($firstSection),
+                'message' => 'Update succeeded!'
+            ]);
+        } catch (\Throwable $exception) {
+            return response()->json([
+                'status' => false,
+                'message' => 'we have an error ! ' . $exception->getMessage()
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
     }
 
-
-    public function destroy(FirstSection $firstSection)
+    public function destroy(FirstSection $firstSection): JsonResponse
     {
-        // handle if error occured in delete  return false
-
-        $firstSection->delete();
-        return response()->json([
-            'status' => true,
-            'message' => 'Delete succeeded!'
-        ]);
+        try {
+            $firstSection->delete();
+            return response()->json([
+                'status' => true,
+                'message' => 'Delete succeeded!'
+            ]);
+        } catch (\Throwable $exception) {
+            return response()->json([
+                'status' => false,
+                'message' => 'we have an error ! ' . $exception->getMessage()
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
     }
 }

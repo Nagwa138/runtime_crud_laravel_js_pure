@@ -81,7 +81,14 @@
 
             // current will not have dashed border
 
-            //handle errors
+            // handle errors / design message returned on error  / if status not true
+
+            // if can not drop not delete -> solved
+
+            // make moving message
+
+            // handle update request
+
 
             let dragItem = null;
 
@@ -159,9 +166,11 @@
                     let currentTbody = currentContainer.querySelector('table tbody')
                     currentTbody.parentElement.style.opacity = '1'
                     currentTbody.parentElement.style.border = '0'
-                    moveSection(dragItem, getNodeIndex(currentContainer))
-                    let sectionId = dragItem.querySelector('td:first-child').innerText
-                    removeSection(sectionId, dragItem, getNodeIndex(dragItem.closest('.container')))
+                    let moved = moveSection(dragItem, getNodeIndex(currentContainer), event)
+                    if(moved == true) {
+                        let sectionId = dragItem.querySelector('td:first-child').innerText
+                        removeSection(sectionId, dragItem, getNodeIndex(dragItem.closest('.container')))
+                    }
                 })
             })
 
@@ -192,8 +201,7 @@
                 removeSection(id.innerText, sectionTr , sectionNumber)
             }
 
-            function editSection(element, sectionNumber)
-            {
+            function editSection(element, sectionNumber) {
                 let currentTr = element.closest('tr')
 
                 let nameTd = currentTr.querySelector(':nth-child(2)')
@@ -280,7 +288,7 @@
 
             tables.forEach(table =>  table.ondragstart = (event) => event.target.tagName === 'TR' ? dragItem = event.target : '')
 
-            function moveSection(sectionTr, newSectionNumber) {
+            function moveSection(sectionTr, newSectionNumber, event) {
                 let name = sectionTr.querySelector('td:nth-child(2)').innerText
                 let birthDate = sectionTr.querySelector('td:nth-child(3)').innerText
                 let createdAt = sectionTr.querySelector('td:nth-child(4)').innerText
@@ -290,25 +298,38 @@
                     birth_date : birthDate,
                     created_at : createdAt
                 }
-                createSection(section, newSectionNumber)
+
+                return createSection(section, newSectionNumber, event)
+
             }
 
-            function createSection(sectionData, sectionNumber) {
+            function createSection(sectionData, sectionNumber, event = null) {
                 $.ajaxSetup({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     }
                 });
 
-                let token = "{{ csrf_token()}}";
-                sectionData['_token'] = token
+                let requestStatus = false
+
+                sectionData['_token'] = "{{ csrf_token()}}"
                 $.ajax({
                     type: 'POST',
-                    url: Number(sectionNumber) == 1 ? '{{route("first_sections.store")}}' : '{{route("second_sections.store")}}' ,
+                    url: Number(sectionNumber) === 1 ? '{{route("first_sections.store")}}' : '{{route("second_sections.store")}}' ,
                     data: sectionData,
+                    global: false, async:false,
                     success: function (data) {
+
+                        requestStatus = data.status
+
                         if(data.status) {
-                            let tbody = Number(sectionNumber) == 1 ?
+                            let inputsTr = Number(sectionNumber) === 1 ?
+                                document.querySelector('.container:first-of-type table thead :first-child')
+                                : document.querySelector('.container:last-of-type table thead :first-child')
+
+                            removeValidationEffect(inputsTr)
+
+                            let tbody = Number(sectionNumber) === 1 ?
                                 document.querySelector('.container:first-of-type table tbody')
                                 : document.querySelector('.container:last-of-type table tbody')
                             let sectionTr = generateNewRow(data.section, sectionNumber)
@@ -316,8 +337,53 @@
                             clearInputs(sectionNumber)
                             showMessage(data.message)
                         }
+
+                        // handle here if status not true
+                    },
+                    error : function (errorList) {
+                        requestStatus = false
+                        if(errorList.responseJSON.hasOwnProperty('errors')) {
+                            let inputsTr = Number(sectionNumber) === 1 ?
+                                document.querySelector('.container:first-of-type table thead :first-child')
+                                : document.querySelector('.container:last-of-type table thead :first-child')
+
+                            removeValidationEffect(inputsTr)
+
+                            for (const errorKey in errorList.responseJSON.errors) {
+
+                                if(event == null)
+                                {
+                                    let input = inputsTr.querySelector('input[name="'+errorKey+'"]')
+                                    input.style.border = '1px solid red'
+                                    let messagePara = document.createElement('p')
+                                    messagePara.innerHTML = errorList.responseJSON.errors[errorKey]
+                                    messagePara.style.color = 'red'
+                                    messagePara.style.fontSize = '14px'
+                                    input.parentElement.appendChild(messagePara)
+                                } else {
+                                    alert('there is an error')
+                                }
+                            }
+                        } else if(errorList.responseJSON.hasOwnProperty('status')) {
+                            // make error message
+                            alert(errorList.responseJSON.message)
+                        } else {
+                            alert(errorList.responseText)
+                        }
                     }
                 })
+                return requestStatus;
+            }
+
+            function removeValidationEffect(element) {
+
+                let attributes = ['name', 'birth_date', 'created_at']
+
+                for (const attribute of attributes) {
+                    let input = element.querySelector('input[name="'+attribute+'"]')
+                    input.style.border = '1px solid aliceblue'
+                    input.parentElement.querySelectorAll('p').forEach(p => p.remove())
+                }
             }
 
             function generateNewRow(section, sectionNumber) {

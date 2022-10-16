@@ -81,11 +81,11 @@
 
             // current will not have dashed border
 
+            //handle errors
+
             let dragItem = null;
 
-            function loadSections()
-            {
-
+            function loadSections() {
                 $.ajaxSetup({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -97,122 +97,33 @@
                     url:'{{route("first_sections.index")}}',
                     data:{},
                     success:function(data){
-                        //handle errors
                         if(data.status)
                         {
                             let firstSections = data.sections
                             let tbody = document.querySelector('.container:first-of-type table tbody')
                             for(let section in firstSections)
                             {
-                                let sectionTr = document.createElement('tr')
-                                // sectionTr.setAttribute('dragstart', 'dragStart(event)')
-                                // sectionTr.setAttribute('ondragend', 'dragEnd(event)')
-                                sectionTr.setAttribute('draggable', 'true')
-                                sectionTr.setAttribute('id', 'tr-1-' + firstSections[section]['id'])
-
-                                // sectionTr.setAttribute('ondrag', 'drag(event)')
-
-                                let idTd = document.createElement('td')
-                                idTd.innerHTML = firstSections[section]['id']
-                                sectionTr.appendChild(idTd)
-                                let nameTd = document.createElement('td')
-                                nameTd.innerHTML = firstSections[section]['name']
-                                sectionTr.appendChild(nameTd)
-                                let birthDateTd = document.createElement('td')
-                                birthDateTd.innerHTML = firstSections[section]['birth_date']
-                                sectionTr.appendChild(birthDateTd)
-                                let createdAtTd = document.createElement('td')
-                                createdAtTd.innerHTML = firstSections[section]['created_at']
-                                sectionTr.appendChild(createdAtTd)
-                                let actionTd = document.createElement('td')
-                                let deleteBtn = document.createElement('button')
-
-                                deleteBtn.style.fontSize = '18px'
-                                deleteBtn.style.display = 'flex'
-                                deleteBtn.style.gap = '20px'
-                                deleteBtn.style.justifyContent = 'space-between'
-                                deleteBtn.style.cursor = 'pointer'
-                                deleteBtn.style.backgroundColor = 'transparent'
-                                let editIcon  = document.createElement('i')
-                                editIcon.classList.add('fa-solid', 'fa-pen-to-square')
-                                let trashIcon  = document.createElement('i')
-                                trashIcon.classList.add('fa-solid', 'fa-trash')
-                                deleteBtn.appendChild(trashIcon)
-                                deleteBtn.appendChild(editIcon)
-                                actionTd.appendChild(deleteBtn)
-                                sectionTr.appendChild(actionTd)
-                                actionTd.appendChild(deleteBtn)
-                                sectionTr.appendChild(actionTd)
+                                let sectionTr = generateNewRow(firstSections[section], 1)
                                 tbody.appendChild(sectionTr)
-
-                                trashIcon.style.color = '#da2557'
-                                trashIcon.setAttribute('onclick', 'deleteSection(this, 1)')
-                                editIcon.style.color = '#5944bb'
-                                editIcon.setAttribute('onclick', 'editSection(this,  1)')
                             }
-
                         }
                     }
                 });
+
                 $.ajax({
                     type:'GET',
                     url:'{{route("second_sections.index")}}',
                     data:{},
                     success:function(data){
-                        //handle errors
                         if(data.status)
                         {
-                            let firstSections = data.sections
+                            let secondSections = data.sections
                             let tbody = document.querySelector('.container:last-of-type table tbody')
-                            for(let section in firstSections)
+                            for(let section in secondSections)
                             {
-                                let sectionTr = document.createElement('tr')
-                                // sectionTr.setAttribute('dragstart', 'dragStart(event)')
-                                // sectionTr.setAttribute('ondragend', 'dragEnd(event)')
-                                sectionTr.setAttribute('draggable', 'true')
-                                sectionTr.setAttribute('id', 'tr-2-' + firstSections[section]['id'])
-
-                                // sectionTr.setAttribute('ondrag', 'drag(event)')
-
-
-                                let idTd = document.createElement('td')
-                                idTd.innerHTML = firstSections[section]['id']
-                                sectionTr.appendChild(idTd)
-                                let nameTd = document.createElement('td')
-                                nameTd.innerHTML = firstSections[section]['name']
-                                sectionTr.appendChild(nameTd)
-                                let birthDateTd = document.createElement('td')
-                                birthDateTd.innerHTML = firstSections[section]['birth_date']
-                                sectionTr.appendChild(birthDateTd)
-                                let createdAtTd = document.createElement('td')
-                                createdAtTd.innerHTML = firstSections[section]['created_at']
-                                sectionTr.appendChild(createdAtTd)
-                                let actionTd = document.createElement('td')
-                                let deleteBtn = document.createElement('button')
-
-                                deleteBtn.style.fontSize = '18px'
-                                deleteBtn.style.display = 'flex'
-                                deleteBtn.style.gap = '20px'
-                                deleteBtn.style.justifyContent = 'space-between'
-                                deleteBtn.style.cursor = 'pointer'
-                                deleteBtn.style.backgroundColor = 'transparent'
-
-                                let editIcon  = document.createElement('i')
-                                editIcon.classList.add('fa-solid', 'fa-pen-to-square')
-                                let trashIcon  = document.createElement('i')
-                                trashIcon.classList.add('fa-solid', 'fa-trash')
-                                deleteBtn.appendChild(trashIcon)
-                                deleteBtn.appendChild(editIcon)
-                                actionTd.appendChild(deleteBtn)
-                                sectionTr.appendChild(actionTd)
+                                let sectionTr = generateNewRow(secondSections[section], 2)
                                 tbody.appendChild(sectionTr)
-
-                                trashIcon.style.color = '#da2557'
-                                trashIcon.setAttribute('onclick', 'deleteSection(this, 2)')
-                                editIcon.style.color = '#5944bb'
-                                editIcon.setAttribute('onclick', 'editSection(this,  2)')
                             }
-
                         }
                     }
                 });
@@ -254,9 +165,7 @@
                 })
             })
 
-
-            function addSection(btn, sectionNumber)
-            {
+            function addSection(btn, sectionNumber) {
                 let currentTr = btn.closest('tr')
                 let name = currentTr.querySelector('input[name="name"]')
                 let birthDate = currentTr.querySelector('input[name="birth_date"]')
@@ -271,7 +180,8 @@
             }
 
             function clearInputs(sectionNumber) {
-                let inputs = sectionNumber == 1 ? document.querySelectorAll('.container:first-of-type table input') :
+                let inputs = Number(sectionNumber) === 1 ?
+                    document.querySelectorAll('.container:first-of-type table input') :
                     document.querySelectorAll('.container:last-of-type table input')
                 inputs.forEach(input => input.value = '')
             }
@@ -284,20 +194,14 @@
 
             function editSection(element, sectionNumber)
             {
-
-                // change td to inputs
-                // get data values
-
                 let currentTr = element.closest('tr')
 
                 let nameTd = currentTr.querySelector(':nth-child(2)')
                 let birthDateTd = currentTr.querySelector(':nth-child(3)')
                 let createdAtTd = currentTr.querySelector(':nth-child(4)')
 
-
                 if(element.classList.contains('fa-pen-to-square'))
                 {
-
                     let nameInput = document.createElement('input')
                     nameInput.setAttribute('type', 'text')
                     nameInput.setAttribute('value', nameTd.innerText)
@@ -325,6 +229,7 @@
                     element.classList.remove('fa-pen-to-square')
                     element.classList.add('fa-check')
                     element.style.color  ='green'
+
                 } else {
 
                     $.ajaxSetup({
@@ -338,7 +243,9 @@
                     let birthDateInput = currentTr.querySelector('input[name="birth_date"]')
                     let createdAtInput = currentTr.querySelector('input[name="created_at"]')
 
-                    let url = Number(sectionNumber) == 1 ? '{{route("first_sections.update", ":id")}}' : '{{route("second_sections.update", ":id")}}'
+                    let url = Number(sectionNumber) === 1 ?
+                        '{{route("first_sections.update", ":id")}}' :
+                        '{{route("second_sections.update", ":id")}}'
                     url = url.replace(':id', idTd.innerText)
 
                     let token = "{{ csrf_token()}}";
@@ -355,11 +262,9 @@
                         success: function (data) {
                             console.log(data)
                             if(data.status) {
-
                                 nameTd.innerHTML = data.section.name
                                 birthDateTd.innerHTML = data.section.birth_date
                                 createdAtTd.innerHTML = data.section.created_at
-
                                 showMessage(data.message)
                             }
                         }
@@ -406,43 +311,8 @@
                             let tbody = Number(sectionNumber) == 1 ?
                                 document.querySelector('.container:first-of-type table tbody')
                                 : document.querySelector('.container:last-of-type table tbody')
-                            let sectionTr = document.createElement('tr')
-                            sectionTr.setAttribute('draggable', 'true')
-                            sectionTr.setAttribute('id', 'tr-' +sectionNumber+ '-' + data.section.id)
-                            let idTd = document.createElement('td')
-                            idTd.innerHTML = data.section.id
-                            sectionTr.appendChild(idTd)
-                            let nameTd = document.createElement('td')
-                            nameTd.innerHTML =data.section.name
-                            sectionTr.appendChild(nameTd)
-                            let birthDateTd = document.createElement('td')
-                            birthDateTd.innerHTML = data.section.birth_date
-                            sectionTr.appendChild(birthDateTd)
-                            let createdAtTd = document.createElement('td')
-                            createdAtTd.innerHTML = data.section.created_at
-                            sectionTr.appendChild(createdAtTd)
-                            let actionTd = document.createElement('td')
-                            let deleteBtn = document.createElement('button')
-                            deleteBtn.style.fontSize = '18px'
-                            deleteBtn.style.display = 'flex'
-                            deleteBtn.style.gap = '20px'
-                            deleteBtn.style.justifyContent = 'space-between'
-                            deleteBtn.style.cursor = 'pointer'
-                            deleteBtn.style.backgroundColor = 'transparent'
-                            let editIcon  = document.createElement('i')
-                            editIcon.classList.add('fa-solid', 'fa-pen-to-square')
-                            let trashIcon  = document.createElement('i')
-                            trashIcon.classList.add('fa-solid', 'fa-trash')
-                            deleteBtn.appendChild(trashIcon)
-                            deleteBtn.appendChild(editIcon)
-                            actionTd.appendChild(deleteBtn)
-                            sectionTr.appendChild(actionTd)
+                            let sectionTr = generateNewRow(data.section, sectionNumber)
                             tbody.appendChild(sectionTr)
-
-                            trashIcon.style.color = '#da2557'
-                            trashIcon.setAttribute('onclick', 'deleteSection(this, '+sectionNumber+')')
-                            editIcon.style.color = '#5944bb'
-                            editIcon.setAttribute('onclick', 'editSection(this,  '+sectionNumber+')')
                             clearInputs(sectionNumber)
                             showMessage(data.message)
                         }
@@ -450,8 +320,46 @@
                 })
             }
 
-            function removeSection(sectionId, element, sectionNumber)
-            {
+            function generateNewRow(section, sectionNumber) {
+                let sectionTr = document.createElement('tr')
+                sectionTr.setAttribute('draggable', 'true')
+                sectionTr.setAttribute('id', 'tr-' +sectionNumber+ '-' + section.id)
+                let idTd = document.createElement('td')
+                idTd.innerHTML = section.id
+                sectionTr.appendChild(idTd)
+                let nameTd = document.createElement('td')
+                nameTd.innerHTML = section.name
+                sectionTr.appendChild(nameTd)
+                let birthDateTd = document.createElement('td')
+                birthDateTd.innerHTML = section.birth_date
+                sectionTr.appendChild(birthDateTd)
+                let createdAtTd = document.createElement('td')
+                createdAtTd.innerHTML = section.created_at
+                sectionTr.appendChild(createdAtTd)
+                let actionTd = document.createElement('td')
+                let deleteBtn = document.createElement('button')
+                deleteBtn.style.fontSize = '18px'
+                deleteBtn.style.display = 'flex'
+                deleteBtn.style.gap = '20px'
+                deleteBtn.style.justifyContent = 'space-between'
+                deleteBtn.style.cursor = 'pointer'
+                deleteBtn.style.backgroundColor = 'transparent'
+                let editIcon  = document.createElement('i')
+                editIcon.classList.add('fa-solid', 'fa-pen-to-square')
+                let trashIcon  = document.createElement('i')
+                trashIcon.classList.add('fa-solid', 'fa-trash')
+                deleteBtn.appendChild(trashIcon)
+                deleteBtn.appendChild(editIcon)
+                actionTd.appendChild(deleteBtn)
+                sectionTr.appendChild(actionTd)
+                trashIcon.style.color = '#da2557'
+                trashIcon.setAttribute('onclick', 'deleteSection(this, '+sectionNumber+')')
+                editIcon.style.color = '#5944bb'
+                editIcon.setAttribute('onclick', 'editSection(this,  '+sectionNumber+')')
+                return sectionTr;
+            }
+
+            function removeSection(sectionId, element, sectionNumber) {
                 $.ajaxSetup({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -460,7 +368,9 @@
 
                 let token = "{{ csrf_token()}}";
 
-                let url = Number(sectionNumber) == 1 ? '{{route("first_sections.destroy", ":id")}}' : '{{route("second_sections.destroy", ":id")}}'
+                let url = Number(sectionNumber) === 1 ?
+                    '{{route("first_sections.destroy", ":id")}}' :
+                    '{{route("second_sections.destroy", ":id")}}'
                 url = url.replace(':id', sectionId)
 
                 $.ajax({

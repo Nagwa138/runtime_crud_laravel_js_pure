@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SecondSectionCreateRequest;
+use App\Http\Requests\SecondSectionUpdateRequest;
 use App\Http\Resources\SectionResource;
 use App\Models\SecondSection;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class SecondSectionController extends Controller
@@ -22,7 +22,7 @@ class SecondSectionController extends Controller
         } catch (\Throwable $exception) {
             return response()->json([
                 'status' => false,
-                'message' => $exception->getMessage()
+                'message' => 'Sorry, we have a technical error error ! '
             ], Response::HTTP_NOT_ACCEPTABLE);
         }
     }
@@ -39,12 +39,12 @@ class SecondSectionController extends Controller
         } catch (\Throwable $exception) {
             return response()->json([
                 'status' => false,
-                'message' => 'we have an error ! ' . $exception->getMessage()
+                'message' => 'Sorry, we have a technical error error ! '
             ], Response::HTTP_NOT_ACCEPTABLE);
         }
     }
 
-    public function update(SecondSectionCreateRequest $request, SecondSection $secondSection): JsonResponse
+    public function update(SecondSectionUpdateRequest $request, SecondSection $secondSection): JsonResponse
     {
         try {
             $secondSection->update($request->validated());
@@ -56,7 +56,7 @@ class SecondSectionController extends Controller
         } catch (\Throwable $exception) {
             return response()->json([
                 'status' => false,
-                'message' => 'we have an error ! ' . $exception->getMessage()
+                'message' => 'Sorry, we have a technical error error ! '
             ], Response::HTTP_NOT_ACCEPTABLE);
         }
     }
@@ -72,7 +72,7 @@ class SecondSectionController extends Controller
         } catch (\Throwable $exception) {
             return response()->json([
                 'status' => false,
-                'message' => 'we have an error ! ' . $exception->getMessage()
+                'message' => 'Sorry, we have a technical error error ! '
             ], Response::HTTP_NOT_ACCEPTABLE);
         }
     }

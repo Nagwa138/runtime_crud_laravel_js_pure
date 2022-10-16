@@ -94,6 +94,22 @@ section .container table {
     display: none;
 }
 
+.error-message {
+    position: absolute;
+    z-index: 1;
+    padding: 15px;
+    width: 250px;
+    text-align: center;
+    background-color: white;
+    border: 3px solid #e12077;
+    color: #e12077;
+    right: -300px;
+    top: 20px;
+    border-radius: 20px;
+    display: none;
+}
+
+
 @keyframes moving {
     0%{
         right: -300px;
@@ -118,5 +134,36 @@ section .container table {
     100% {
         right: -300px;
         transform: rotate(0deg);
+    }
+}
+
+
+@keyframes vibrate {
+    0% {
+        right: 40px;
+    }
+    5% {
+        right: 30px;
+    }
+
+    10% {
+        right: 40px;
+    }
+
+    15% {
+        right: 30px;
+    }
+    20% {
+        right: 40px;
+    }
+
+    25% {
+        right: 30px;
+    }
+    30% {
+        right: 100px;
+    }
+    100% {
+        right: -300px;
     }
 }

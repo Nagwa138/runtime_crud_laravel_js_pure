@@ -18,7 +18,7 @@ class SectionResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'birth_date' => $this->birth_date,
-            'created_at' => $this->created_at->format('Y-m-d h:i a')
+            'created_at' => $this->created_at->format('Y-m-d H:i')
         ];
     }
 }

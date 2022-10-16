@@ -11,9 +11,9 @@ class FirstSectionUpdateRequest extends FormRequest
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,10 +21,12 @@ class FirstSectionUpdateRequest extends FormRequest
      *
      * @return array<string, mixed>
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            //
+            'name' => ['sometimes', 'required', 'string', 'unique:first_sections,name,' . $this->route('first_section')['id']],
+            'birth_date' => ['sometimes', 'required', 'date', 'date_format:Y-m-d'],
+            'created_at' => ['sometimes', 'required', 'date'],
         ];
     }
 }

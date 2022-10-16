@@ -5,6 +5,7 @@
     </head>
     <body>
         <div class="message"></div>
+        <div class="error-message"></div>
         <section>
             <div class="container">
                 <p>Section One</p>
@@ -78,11 +79,6 @@
             // use progress bar
 
             // make design of the container
-
-            // handle errors / design message returned on error  / if status not true
-
-            // handle update request
-
 
             let dragItem = null;
 
@@ -264,19 +260,39 @@
                             created_at: createdAtInput.value,
                         },
                         success: function (data) {
-                            console.log(data)
                             if(data.status) {
                                 nameTd.innerHTML = data.section.name
                                 birthDateTd.innerHTML = data.section.birth_date
                                 createdAtTd.innerHTML = data.section.created_at
                                 showMessage(data.message)
+                                element.classList.add('fa-pen-to-square')
+                                element.classList.remove('fa-check')
+                                element.style.color  ='#5944bb'
+                            } else {
+                                showMessage('An Unexpected error occurred!', true)
+                            }
+                        },
+                        error : function (errorList) {
+                            if(errorList.responseJSON.hasOwnProperty('errors')) {
+
+                                removeValidationEffect(currentTr)
+
+                                for (const errorKey in errorList.responseJSON.errors) {
+                                        let input = currentTr.querySelector('input[name="'+errorKey+'"]')
+                                        input.style.border = '1px solid red'
+                                        let messagePara = document.createElement('p')
+                                        messagePara.innerHTML = errorList.responseJSON.errors[errorKey]
+                                        messagePara.style.color = 'red'
+                                        messagePara.style.fontSize = '14px'
+                                        input.parentElement.appendChild(messagePara)
+                                }
+                            } else if(errorList.responseJSON.hasOwnProperty('status')) {
+                                showMessage(errorList.responseJSON.message, true)
+                            } else {
+                                showMessage(errorList.responseText, true)
                             }
                         }
                     })
-
-                    element.classList.add('fa-pen-to-square')
-                    element.classList.remove('fa-check')
-                    element.style.color  ='#5944bb'
                 }
             }
 
@@ -315,9 +331,7 @@
                     data: sectionData,
                     global: false, async:false,
                     success: function (data) {
-
                         requestStatus = data.status
-
                         if(data.status) {
                             let inputsTr = Number(sectionNumber) === 1 ?
                                 document.querySelector('.container:first-of-type table thead :first-child')
@@ -332,9 +346,9 @@
                             tbody.appendChild(sectionTr)
                             clearInputs(sectionNumber)
                             showMessage(data.message)
+                        } else {
+                            showMessage('An Unexpected error occurred!', true)
                         }
-
-                        // handle here if status not true
                     },
                     error : function (errorList) {
                         requestStatus = false
@@ -357,14 +371,13 @@
                                     messagePara.style.fontSize = '14px'
                                     input.parentElement.appendChild(messagePara)
                                 } else {
-                                    alert('there is an error')
+                                    showMessage(errorList.responseJSON.errors[errorKey], true)
                                 }
                             }
                         } else if(errorList.responseJSON.hasOwnProperty('status')) {
-                            // make error message
-                            alert(errorList.responseJSON.message)
+                            showMessage(errorList.responseJSON.message, true)
                         } else {
-                            alert(errorList.responseText)
+                            showMessage(errorList.responseText, true)
                         }
                     }
                 })
@@ -451,11 +464,21 @@
                 })
             }
 
-            function showMessage(messageText) {
+            function showMessage(messageText, error = null) {
+
+                // make error message
+
                 let message = document.querySelector('.message')
+                if(error != null)
+                {
+                    message = document.querySelector('.error-message')
+                    message.style.display = 'none'
+                    message.style.setProperty('animation', 'vibrate 3s')
+                } else {
+                    message.style.display = 'none'
+                    message.style.setProperty('animation', 'moving 3s')
+                }
                 message.innerHTML = messageText
-                message.style.display = 'none'
-                message.style.setProperty('animation', 'moving 3s')
                 message.style.display = 'block'
                 setTimeout(function() {
                     message.style.display = 'none'

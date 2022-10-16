@@ -79,13 +79,7 @@
 
             // make design of the container
 
-            // current will not have dashed border
-
             // handle errors / design message returned on error  / if status not true
-
-            // if can not drop not delete -> solved
-
-            // make moving message
 
             // handle update request
 
@@ -145,8 +139,11 @@
                     event.preventDefault()
                     let currentContainer = event.target.closest('.container')
                     let currentTable = currentContainer.querySelector('table')
-                    currentTable.style.opacity = '0.5'
-                    currentTable.style.border = '1px dashed black'
+                    if(dragItem.closest('table') !== currentTable)
+                    {
+                        currentTable.style.opacity = '0.5'
+                        currentTable.style.border = '1px dashed black'
+                    }
                 })
 
                 target.addEventListener('dragenter', function (event) {
@@ -164,12 +161,11 @@
                     event.preventDefault();
                     let currentContainer = event.target.closest('.container')
                     let currentTbody = currentContainer.querySelector('table tbody')
-                    currentTbody.parentElement.style.opacity = '1'
-                    currentTbody.parentElement.style.border = '0'
-                    let moved = moveSection(dragItem, getNodeIndex(currentContainer), event)
-                    if(moved == true) {
-                        let sectionId = dragItem.querySelector('td:first-child').innerText
-                        removeSection(sectionId, dragItem, getNodeIndex(dragItem.closest('.container')))
+                    if(dragItem.closest('table') !== currentTbody.closest('table')) {
+                        currentTbody.parentElement.style.opacity = '1'
+                        currentTbody.parentElement.style.border = '0'
+                        let moved = moveSection(dragItem, getNodeIndex(currentContainer), event)
+                        if (moved === true) removeSection(dragItem, getNodeIndex(dragItem.closest('.container')), 'Moved Successfully!')
                     }
                 })
             })
@@ -198,7 +194,7 @@
             function deleteSection(btn, sectionNumber) {
                 let sectionTr = btn.closest('tr')
                 let id = sectionTr.querySelector(':first-child')
-                removeSection(id.innerText, sectionTr , sectionNumber)
+                removeSection(sectionTr , sectionNumber)
             }
 
             function editSection(element, sectionNumber) {
@@ -425,7 +421,8 @@
                 return sectionTr;
             }
 
-            function removeSection(sectionId, element, sectionNumber) {
+            function removeSection(element, sectionNumber, messageText = null) {
+                let sectionId = element.querySelector(':first-child').innerText
                 $.ajaxSetup({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -448,7 +445,7 @@
                     success: function (data) {
                         if(data.status) {
                             element.remove()
-                            showMessage(data.message)
+                            showMessage(messageText === null ? data.message : messageText)
                         }
                     }
                 })
